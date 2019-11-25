@@ -1,11 +1,8 @@
-
+file_extension --> fileFormat
+file_name --> fileName
 project_title --> title and name
 project_description --> description
 project_hosting --> contentUrl
-
-file_extension --> fileFormat
-file_name --> fileName
-
 datePublished
 #citation = Citation for the dataset(s) described.
 #keywords = Keywords, separated by commas, associated with the dataset(s) described.

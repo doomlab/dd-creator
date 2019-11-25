@@ -11,7 +11,8 @@ library(jsonlite)
 library(haven)
 library(readr)
 library(tibble)
-library(codebook)
+#library(codebook)
+library(purrr)
 
 ## interface files
 source("project_interface.R")
@@ -20,6 +21,8 @@ source("variables_interface.R")
 source("labels_interface.R")
 source("output_interface.R")
 source("upload_interface.R")
+source("person_json.R")
+source("property_value_json.R")
 
 ## Global Variables ----
 rawdata <- NULL
@@ -73,20 +76,20 @@ ui <- dashboardPage(skin = 'black',
 server <- function(input, output, session) { 
   ## Creators table ----
   # store 'empty' tibble
-  creators_table <-
+  creators_table <<-
     tibble(
-      id_creators = character(),
-      givenName_creators = character(),
-      familyName_creators = character(),
-      affiliation_creators = character(),
-      email_creators = character()
+      id = character(),
+      givenName = character(),
+      familyName = character(),
+      affiliation = character(),
+      email = character()
     ) 
-  creators_table <- add_row(creators_table,
-                            id_creators = "your ORC-ID",
-                            givenName_creators = "First/Given Name",
-                            familyName_creators = "Last/Family Name",
-                            affiliation_creators = "Affiliation", 
-                            email_creators = "Email")
+  creators_table <<- add_row(creators_table,
+                            id = "your ORC-ID",
+                            givenName = "First/Given Name",
+                            familyName = "Last/Family Name",
+                            affiliation = "Affiliation", 
+                            email = "Email")
   
   # display creators table view
   output$creators_input <- 
@@ -315,15 +318,33 @@ server <- function(input, output, session) {
     content = function(file) {
       
       #var_list <- split(var_data, seq(nrow(var_data)))
+      authors <- purrr::pmap(creators_table, Person)
+      
+      var_data_json <- purrr::pmap(var_data, PropertyValue)
       
       #take metadata data and create JSON
       list(type = "Dataset",
-        name = file_name,
-        alternateName = input$project_name,
+        name = input$project_title, #title 
+        fileFormat = file_extention,
+        fileName = file_name,
         description = input$project_description,
-        datePublished = Sys.Date(),
-        creator = input$project_author,
-        variableMeasured = var_data,
+        contentUrl = input$project_hosting,
+        datePublished = input$datePublished,
+        citation = input$citation,
+        keywords = input$keywords,
+        license = license,
+        funder = funder,
+        temporalCoverage = paste(input$startDate, input$endDate, sep="/"),
+        spatialCoverage = list(
+          type = "Place",
+          name = input$geographicDescription),
+        #do this map 
+        creator = authors,
+        distribution = list(type = "DataDownload",
+             name = input$name,
+             contentUrl = input$contentUrl,
+             fileFormat = input$fileFormat),
+        variableMeasured = var_data_json,
         disambiguatingDescription = attribute_storage) %>% 
         toJSON() %>%
         writeLines(file)

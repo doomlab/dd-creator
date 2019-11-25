@@ -1,0 +1,46 @@
+PropertyValue <-function(id = NULL,
+valueReference = NULL,
+ value = NULL,
+ unitText = NULL,
+ unitCode = NULL,
+ propertyID = NULL,
+ minValue = NULL,
+ maxValue = NULL,
+ url = NULL,
+ sameAs = NULL,
+ potentialAction = NULL,
+ name = NULL,
+ mainEntityOfPage = NULL,
+ image = NULL,
+ identifier = NULL,
+ disambiguatingDescription = NULL,
+ description = NULL,
+ alternateName = NULL,
+ additionalType = NULL){
+Filter(Negate(is.null),
+ list(
+type = "PropertyValue",
+id = variable, # 
+valueReference = valueReference,
+value = value,
+unitText = types, #
+unitCode = unitCode,
+propertyID = propertyID,
+minValue = min, #
+maxValue = max, #
+url = url,
+sameAs = sameAs,
+potentialAction = potentialAction,
+name = name,
+mainEntityOfPage = mainEntityOfPage,
+image = image,
+identifier = identifier,
+disambiguatingDescription = list(type = "Text", 
+                                 uniqueValues = unique_values,
+                                 missingValues = missing_values,
+                                 missingValuesAllowed = na,
+                                 missingValuesValues = na_values,
+                                 levels = levels), #
+description = description, #
+alternateName = synonyms, #
+additionalType = additionalType))}

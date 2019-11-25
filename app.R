@@ -12,7 +12,7 @@ library(haven)
 library(readr)
 library(tibble)
 #library(codebook)
-library(purrr)
+#library(purrr)
 
 ## interface files
 source("project_interface.R")
@@ -21,8 +21,6 @@ source("variables_interface.R")
 source("labels_interface.R")
 source("output_interface.R")
 source("upload_interface.R")
-source("person_json.R")
-source("property_value_json.R")
 
 ## Global Variables ----
 rawdata <- NULL
@@ -84,6 +82,7 @@ server <- function(input, output, session) {
       affiliation = character(),
       email = character()
     ) 
+  creators_table <<- as.data.frame(creators_table)
   creators_table <<- add_row(creators_table,
                             id = "your ORC-ID",
                             givenName = "First/Given Name",
@@ -101,13 +100,24 @@ server <- function(input, output, session) {
              colnames = c("ORC-ID", "Given Name", 
                           "Family Name", "Affiliation", "Email"))
   
-  # store a proxy of creators_table to save
-  proxy <- dataTableProxy(outputId = "creators_input")
+  # store a proxy of creators_table
+  creators_proxy <- dataTableProxy(outputId = "creators_input", session)
   
-  # each time addData is pressed, add user_table to proxy
+  # each time addData is pressed, add creators_table to proxy
   observeEvent(eventExpr = input$addData, {
-    proxy %>% 
-      addRow(creators_table)
+    creators_proxy %>% 
+      addRow(creators_table[1, ])
+  })
+  
+  ## proxy saving creators data ----
+  observeEvent(input$creators_input_cell_edit,  {
+    info = input$creators_input_cell_edit
+    str(info)
+    i = info$row
+    j = info$col
+    v = info$value
+    creators_table[i,j+1] <<- isolate(DT::coerceValue(v, creators_table[i,j+1]))
+    #replaceData(vars_proxy, var_data, resetPaging = F)
   })
   
   ## Load data ----
@@ -115,7 +125,7 @@ server <- function(input, output, session) {
     inFile <- input$inFile
     if (is.null(inFile)) return(NULL)
     
-    file_extension <- tools::file_ext(inFile$datapath)
+    file_extension <<- tools::file_ext(inFile$datapath)
     if (file_extension == "csv") {
       rawdata <<- read.csv(inFile$datapath, header = input$header,
                            stringsAsFactors = F)
@@ -318,34 +328,63 @@ server <- function(input, output, session) {
     content = function(file) {
       
       #var_list <- split(var_data, seq(nrow(var_data)))
-      authors <- purrr::pmap(creators_table, Person)
+      #authors <- purrr::pmap(creators_table, Person)
       
-      var_data_json <- purrr::pmap(var_data, PropertyValue)
+      authors <<- list()
+      for (i in 1:nrow(creators_table)){
+        authors[[i]] <<- list(
+          `@type` = "Person",
+          id = creators_table$id[i],
+          givenName = creators_table$givenName[i],
+          familyName = creators_table$familyName[i],
+          email = creators_table$email[i],
+          affiliation = creators_table$affiliation[i]
+        )
+      }
+      
+      var_data_json <<- list()
+      for (i in 1:nrow(var_data)){ 
+        var_data_json[[i]] <<- list(
+          `@type` = "PropertyValue",
+          id = var_data$variable[i], # 
+          unitText = var_data$type[i], #
+          minValue = var_data$min[i], #
+          maxValue = var_data$max[i], #
+          disambiguatingDescription = list(`@type` = "Text", 
+                                           uniqueValues = var_data$unique_values[i],
+                                           missingValues = var_data$missing_values[i],
+                                           missingValuesAllowed = var_data$na[i],
+                                           missingValuesValues = var_data$na_values[i],
+                                           levels = var_data$levels[i]), #
+          description = var_data$description[i], #
+          alternateName = var_data$synonyms[i])
+        }
       
       #take metadata data and create JSON
-      list(type = "Dataset",
+      ##add attributes
+      list(`@type` = "Dataset",
         name = input$project_title, #title 
-        fileFormat = file_extention,
+        fileFormat = file_extension,
         fileName = file_name,
         description = input$project_description,
         contentUrl = input$project_hosting,
         datePublished = input$datePublished,
         citation = input$citation,
         keywords = input$keywords,
-        license = license,
-        funder = funder,
+        license = input$license,
+        funder = input$funder,
         temporalCoverage = paste(input$startDate, input$endDate, sep="/"),
         spatialCoverage = list(
-          type = "Place",
+          `@type` = "Place",
           name = input$geographicDescription),
         #do this map 
         creator = authors,
-        distribution = list(type = "DataDownload",
-             name = input$name,
-             contentUrl = input$contentUrl,
-             fileFormat = input$fileFormat),
-        variableMeasured = var_data_json,
-        disambiguatingDescription = attribute_storage) %>% 
+        distribution = list(
+          `@type` = "DataDownload",
+          name = input$project_title,
+          contentUrl = input$project_hosting,
+          fileFormat = file_extension),
+        variableMeasured = var_data_json) %>% 
         toJSON() %>%
         writeLines(file)
     }

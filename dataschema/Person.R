@@ -68,7 +68,7 @@ worksFor = NULL,
  additionalType = NULL){
 Filter(Negate(is.null),
  list(
-type = "Person",
+`@type`= "Person",
 id = id,
 worksFor = worksFor,
 workLocation = workLocation,

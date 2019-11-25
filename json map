@@ -19,3 +19,32 @@ givenName_creators --> givenName
 familyName_creators  --> familyName
 affiliation_creators  --> affiliation
 email_creators  --> email 
+
+
+
+ list(
+type = "PropertyValue",
+id = variable, # 
+valueReference = valueReference,
+value = value,
+unitText = types, #
+unitCode = unitCode,
+propertyID = propertyID,
+minValue = min, #
+maxValue = max, #
+url = url,
+sameAs = sameAs,
+potentialAction = potentialAction,
+name = name,
+mainEntityOfPage = mainEntityOfPage,
+image = image,
+identifier = identifier,
+disambiguatingDescription = list(type = "Text", 
+                                 uniqueValues = unique_values,
+                                 missingValues = missing_values,
+                                 missingValuesAllowed = na,
+                                 missingValuesValues = na_values,
+                                 levels = levels), #
+description = description, #
+alternateName = synonyms, #
+additionalType = additionalType)

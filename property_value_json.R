@@ -20,14 +20,14 @@ valueReference = NULL,
 Filter(Negate(is.null),
  list(
 type = "PropertyValue",
-id = variable, # 
+id = id, # 
 valueReference = valueReference,
 value = value,
-unitText = types, #
+unitText = unitText, #
 unitCode = unitCode,
 propertyID = propertyID,
-minValue = min, #
-maxValue = max, #
+minValue = minValue, #
+maxValue = maxValue, #
 url = url,
 sameAs = sameAs,
 potentialAction = potentialAction,
@@ -36,11 +36,11 @@ mainEntityOfPage = mainEntityOfPage,
 image = image,
 identifier = identifier,
 disambiguatingDescription = list(type = "Text", 
-                                 uniqueValues = unique_values,
-                                 missingValues = missing_values,
-                                 missingValuesAllowed = na,
-                                 missingValuesValues = na_values,
+                                 uniqueValues = uniqueValues,
+                                 missingValues = missingValues,
+                                 missingValuesAllowed = missingValuesAllowed,
+                                 missingValuesValues = missingValuesValues,
                                  levels = levels), #
 description = description, #
-alternateName = synonyms, #
+alternateName = alternateName, #
 additionalType = additionalType))}

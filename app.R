@@ -1,5 +1,6 @@
 ## Data Dictionary Creator
 ## SIPS Hackathon 2018: Lisa DeBruine, Alicia Moher, and Erin M. Buchanan
+## Rewritten by Erin M. Buchanan for revise and resubmit paper
 ## Updates by Erin M. Buchanan and DOOM Lab Team: Sarah Crain, Arielle Cunningham, Hannah Johnson, Hannah Stash
 
 ## app.R ##
@@ -9,6 +10,7 @@ library(DT)
 library(jsonlite)
 library(haven)
 library(readr)
+library(tibble)
 
 ## interface files
 source("project_interface.R")
@@ -26,7 +28,7 @@ attribute_storage <- list()
 
 ## UI ----
 ui <- dashboardPage(skin = 'black',
-  dashboardHeader(title = tags$b("DD Creator")),
+  dashboardHeader(title = "Data Dictionary Creator"),
   dashboardSidebar(
     sidebarMenu(
       menuItem(tags$b("1. Project Info"), tabName = "project_tab"),
@@ -37,6 +39,25 @@ ui <- dashboardPage(skin = 'black',
     )
   ),
   dashboardBody(
+    
+    ## add a custom css file
+    tags$head(tags$style(HTML('
+      .main-header .logo {
+        font-weight: bold;
+        font-size: 16px;
+      }
+      .box.box-solid.box-primary>.box-header {
+        color:#fff;
+        background:#666666
+      }
+      .box.box-solid.box-primary {
+        border-bottom-color:#666666;
+        border-left-color:#666666;
+        border-right-color:#666666;
+        border-top-color:#666666;
+      }'))),
+    
+    ## show the tab items
     tabItems(
       project_tab,
       upload_tab,
@@ -49,6 +70,42 @@ ui <- dashboardPage(skin = 'black',
 
 ## server ----
 server <- function(input, output, session) { 
+  ## Creators table ----
+  # store 'empty' tibble
+  creators_table <-
+    tibble(
+      id_creators = character(),
+      givenName_creators = character(),
+      familyName_creators = character(),
+      affiliation_creators = character(),
+      email_creators = character()
+    ) 
+  creators_table <- add_row(creators_table,
+                            id_creators = "your ORC-ID",
+                            givenName_creators = "First/Given Name",
+                            familyName_creators = "Last/Family Name",
+                            affiliation_creators = "Affiliation", 
+                            email_creators = "Email")
+  
+  # display creators table view
+  output$creators_input <- 
+    renderDT(creators_table, 
+             server = FALSE, 
+             editable = TRUE, 
+             options = list(lengthChange = TRUE), 
+             rownames = FALSE, 
+             colnames = c("ORC-ID", "Given Name", 
+                          "Family Name", "Affiliation", "Email"))
+  
+  # store a proxy of creators_table to save
+  proxy <- dataTableProxy(outputId = "creators_input")
+  
+  # each time addData is pressed, add user_table to proxy
+  observeEvent(eventExpr = input$addData, {
+    proxy %>% 
+      addRow(creators_table)
+  })
+  
   ## Load data ----
   dat <- reactive({
     inFile <- input$inFile

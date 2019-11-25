@@ -1,9 +1,10 @@
 variables_tab <- tabItem(tabName = "variables_tab",
   fluidRow(
     box(
-      title = tags$b("Edit Variable Metadata"),
+      title = tags$b("Instructions for Editing Data"),
       collapsible = TRUE,
       solidHeader = TRUE,
+      status = "primary",
       width = 12,
       p("On this page, you will edit the information about the columns/variables in your 
         uploaded dataset. Double click in an individual cell to edit the information provided or 
@@ -40,10 +41,17 @@ variables_tab <- tabItem(tabName = "variables_tab",
         These are user-defined and not constrained by a controlled vocabulary."),
       p("Please note that depending on browser size, the data table below may scroll side to side. 
         Also use the bottom entries pagination to continue on to the next columns (i.e., only 
-        ten columns are shown at a time)."),
-      
+        ten columns are shown at a time).")
+    ), #close box
+    
+    box(      
+      title = tags$b("Edit Variable Data"),
+      collapsible = TRUE,
+      solidHeader = TRUE,
+      status = "primary",
+      width = 12,
       DTOutput("vars_table")
       #actionButton("copy_var_to_desc_button", "Copy Variable Names to Description")
-    )
-  )
-)
+    ) #close box
+  ) #close fluid row
+) #close page 

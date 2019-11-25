@@ -3,8 +3,8 @@ project_title --> title and name
 project_description --> description
 project_hosting --> contentUrl
 
-pull fileformat from input --> fileFormat
-pull filename from input --> fileName
+file_extension --> fileFormat
+file_name --> fileName
 
 datePublished
 #citation = Citation for the dataset(s) described.

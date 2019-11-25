@@ -12,8 +12,8 @@ project_tab <- tabItem(tabName = "project_tab",
         are several sections to complete, and you can close each box for better viewing by 
         clicking on the minus (-) sign in the top right corner of the box."),
       br(),
-      p("First, you can fill in the project information and description on this page. Next, click on page 2. Upload 
-        Data to input your data and start labeling variables. You can follow the steps in 
+      p("First, you can fill in the project information and description on this page. Next, click on page 
+      \"2. Upload Data\" to input your data and start labeling variables. You can follow the steps in 
         order as they appear on the side panel. At the end of the steps, you will have a machine 
         readable file for your data to be indexed in dataset searches, and a human readable HTML 
         report for you to share with others for maximum reach to all audiences."),

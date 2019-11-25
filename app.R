@@ -11,6 +11,7 @@ library(jsonlite)
 library(haven)
 library(readr)
 library(tibble)
+library(codebook)
 
 ## interface files
 source("project_interface.R")

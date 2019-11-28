@@ -327,8 +327,7 @@ server <- function(input, output, session) {
     filename= paste0(file_name, "_JSON_", gsub("-", "", Sys.Date()), ".JSON"),
     content = function(file) {
       
-      #var_list <- split(var_data, seq(nrow(var_data)))
-      #authors <- purrr::pmap(creators_table, Person)
+      attribute_storage
       
       authors <<- list()
       for (i in 1:nrow(creators_table)){
@@ -361,7 +360,6 @@ server <- function(input, output, session) {
         }
       
       #take metadata data and create JSON
-      ##add attributes
       list(`@type` = "Dataset",
         name = input$project_title, #title 
         fileFormat = file_extension,

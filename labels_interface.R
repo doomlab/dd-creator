@@ -25,6 +25,26 @@ labels_tab <- tabItem(tabName = "labels_tab",
                   choices = c(),
                   multiple = FALSE), 
       DTOutput("level_col_table")
+    ), #close box
+    
+    box(
+      title = tags$b("Multiple Category Labels"),
+      collapsible = TRUE,
+      solidHeader = TRUE,
+      status = "primary",
+      width = 12,
+      p("In this section, you can copy column labels for any variables that have 
+        the same information. Be sure to only select columns with the same labels!"),
+      selectInput("level_col_copy_from",
+                  label = "Columns to copy from:",
+                  choices = c(),
+                  multiple = FALSE), 
+      selectInput("level_col_copy_to",
+                  label = "Columns to copy to:",
+                  choices = c(),
+                  multiple = TRUE),
+      actionButton("copy_columns", "Copy Column Values"),
+      verbatimTextOutput("copied_columns")
     ) #close box
   ) #fluidrow
 ) #close page 

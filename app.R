@@ -172,7 +172,18 @@ server <- function(input, output, session) {
   output$vars_table <- renderDataTable({
     column_names <- names(rawdata)
     
+    ## original column names for the edit
     updateSelectInput(session, "level_col_select", 
+                      label = NULL, choices = column_names,
+                      selected = NULL)
+    
+    ## original column names for copy from
+    updateSelectInput(session, "level_col_copy_from", 
+                      label = NULL, choices = column_names,
+                      selected = NULL)
+    
+    ## original column names for copy to
+    updateSelectInput(session, "level_col_copy_to", 
                       label = NULL, choices = column_names,
                       selected = NULL)
     
@@ -281,6 +292,21 @@ server <- function(input, output, session) {
     # save level column data to temp storage, eventually to attributes
     attribute_storage[[input$level_col_select]] <<- level_col_data
   })
+  
+  ## action button copy ----
+  copy_over <- eventReactive(input$copy_columns,{
+    
+    for (i in 1:length(input$level_col_copy_to)){
+      attribute_storage[[input$level_col_copy_to[i]]] <<- attribute_storage[[input$level_col_copy_from]]
+    }
+    
+    "Columns have been copied."
+    
+  })
+  
+  output$copied_columns <- renderText({
+    copy_over()
+  })
 
   ## output$output_csv ----
   output$output_csv <- downloadHandler(
@@ -327,8 +353,24 @@ server <- function(input, output, session) {
     filename= paste0(file_name, "_JSON_", gsub("-", "", Sys.Date()), ".JSON"),
     content = function(file) {
       
-      attribute_storage
+      ## only use attributes that have been entered
+      attribute_levels <<- list()
       
+      for (i in 1:length(attribute_storage)){
+        ## check if they are all equal 
+        if (!identical(as.character(attribute_storage[[i]]$values), 
+                      as.character(attribute_storage[[i]]$description))){
+          ## keep only mismatch
+          attribute_levels[[i]] <<- attribute_storage[[i]][!match(as.character(attribute_storage[[i]]$values), 
+                                                                 as.character(attribute_storage[[i]]$description), 
+                                                                 nomatch = FALSE), ]
+          ## give it a name
+          names(attribute_levels)[i] <<- names(attribute_storage)[i]
+          names(attribute_levels[[i]])[1] <<- "codeValue"
+        }
+      }
+      
+      ## create author list
       authors <<- list()
       for (i in 1:nrow(creators_table)){
         authors[[i]] <<- list(
@@ -341,6 +383,7 @@ server <- function(input, output, session) {
         )
       }
       
+      ## create variable information
       var_data_json <<- list()
       for (i in 1:nrow(var_data)){ 
         var_data_json[[i]] <<- list(
@@ -354,7 +397,10 @@ server <- function(input, output, session) {
                                            missingValues = var_data$missing_values[i],
                                            missingValuesAllowed = var_data$na[i],
                                            missingValuesValues = var_data$na_values[i],
-                                           levels = var_data$levels[i]), #
+                                           levels = var_data$levels[i],
+                                           valueLabels = list(
+                                             `@type` = "CategoryCode",
+                                             attribute_levels[[var_data$variable[i]]])), #
           description = var_data$description[i], #
           alternateName = var_data$synonyms[i])
         }

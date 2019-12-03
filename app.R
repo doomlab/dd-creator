@@ -11,6 +11,8 @@ library(jsonlite)
 library(haven)
 library(readr)
 library(tibble)
+library(rio)
+library(qualtRics)
 #library(codebook)
 #library(purrr)
 
@@ -37,7 +39,8 @@ ui <- dashboardPage(skin = 'black',
       menuItem(tags$b("2. Upload Data"), tabName = "upload_tab"),
       menuItem(tags$b("3. Variables"), tabName = "variables_tab"),
       menuItem(tags$b("4. Category Labels"), tabName = "labels_tab"),
-      menuItem(tags$b("5. Output"), tabName = "output_tab")
+      menuItem(tags$b("5. Output"), tabName = "output_tab"),
+      menuItem(tags$b("6. About"), tabName = "help_tab")
     )
   ),
   dashboardBody(
@@ -65,7 +68,8 @@ ui <- dashboardPage(skin = 'black',
       upload_tab,
       variables_tab,
       labels_tab,
-      output_tab
+      output_tab,
+      help_tab
     ) # end tabItems
   ) # end dashboardBody
 ) # end dashboardPage
@@ -126,20 +130,28 @@ server <- function(input, output, session) {
     if (is.null(inFile)) return(NULL)
     
     file_extension <<- tools::file_ext(inFile$datapath)
-    if (file_extension == "csv") {
-      rawdata <<- read.csv(inFile$datapath, header = input$header,
-                           stringsAsFactors = F)
-    } else if (file_extension %in% c("xls", "xlsx")) {
-      rawdata <<- as.data.frame(readxl::read_excel(inFile$datapath,
-                                                   col_names = input$header))
-    } else if (file_extension %in% c("sav")) {
-      rawdata <<- as.data.frame(haven::read_sav(inFile$datapath))
-    } else if (file_extension %in% c("sas")) {
-      rawdata <<- as.data.frame(haven::read_sas(inFile$datapath))
-    } else if (file_extension %in% c("txt")) {
-      rawdata <<- as.data.frame(read.delim(inFile$datapath,
-                                           header = input$header))
+    
+    if (input$qualtrics){
+      #Qualtrics specific issue
+      rawdata <<- as.data.frame(readSurvey(inFile$datapath))
+    } else { 
+      #all others with rio 
+      rawdata <<- as.data.frame(import(inFile$datapath))
     }
+    # if (file_extension == "csv") {
+    #   rawdata <<- read.csv(inFile$datapath, header = input$header,
+    #                        stringsAsFactors = F)
+    # } else if (file_extension %in% c("xls", "xlsx")) {
+    #   rawdata <<- as.data.frame(readxl::read_excel(inFile$datapath,
+    #                                                col_names = input$header))
+    # } else if (file_extension %in% c("sav")) {
+    #   rawdata <<- as.data.frame(haven::read_sav(inFile$datapath))
+    # } else if (file_extension %in% c("sas")) {
+    #   rawdata <<- as.data.frame(haven::read_sas(inFile$datapath))
+    # } else if (file_extension %in% c("txt")) {
+    #   rawdata <<- as.data.frame(read.delim(inFile$datapath,
+    #                                        header = input$header))
+    # }
     
     #save file name as global variable for writing
     file_name <<- gsub(paste0("." , file_extension), "", inFile$name)

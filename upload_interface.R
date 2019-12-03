@@ -12,21 +12,12 @@ upload_tab <- tabItem(tabName = "upload_tab",
         editing the descriptions on the next pages \"3. Variables\" and \"4. Category Labels\" 
         in the left hand menu. The data file you uploaded will be displayed below, so you can verify 
         it was read properly."),
-      fileInput("inFile", "TXT/CSV/XLS(X)/SAV/SAS Data File", 
+      fileInput("inFile", "Nearly all data formats supported:", 
                 multiple = FALSE, width = NULL,
-                accept = c(
-                  'text/csv',
-                  'text/comma-separated-values,text/plain',
-                  '.csv',
-                  '.xls',
-                  '.xlsx',
-                  '.sav',
-                  '.sas'
-                ), 
                 buttonLabel = "Browse...", 
                 placeholder = "No file selected"
       ),
-      checkboxInput("header", "Data file has a header.", TRUE),
+      checkboxInput("qualtrics", "Data file is Qualtrics formatted .csv.", FALSE),
       DTOutput("rawdata_table")
     )
   )

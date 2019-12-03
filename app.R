@@ -131,9 +131,10 @@ server <- function(input, output, session) {
     
     file_extension <<- tools::file_ext(inFile$datapath)
     
-    if (input$qualtrics){
+    if (input$qualtrics | input$qualtrics_legacy){
       #Qualtrics specific issue
-      rawdata <<- as.data.frame(readSurvey(inFile$datapath))
+      rawdata <<- as.data.frame(readSurvey(inFile$datapath,
+                                           legacy = input$qualtrics_legacy))
     } else { 
       #all others with rio 
       rawdata <<- as.data.frame(import(inFile$datapath))

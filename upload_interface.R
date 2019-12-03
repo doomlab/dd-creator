@@ -18,6 +18,7 @@ upload_tab <- tabItem(tabName = "upload_tab",
                 placeholder = "No file selected"
       ),
       checkboxInput("qualtrics", "Data file is Qualtrics formatted .csv.", FALSE),
+      checkboxInput("qualtrics_legacy", "Data file is Legacy Qualtrics formatted .csv.", FALSE),
       DTOutput("rawdata_table")
     )
   )

@@ -12,7 +12,6 @@ library(haven)
 library(readr)
 library(tibble)
 library(rio)
-library(qualtRics)
 #library(codebook)
 #library(purrr)
 
@@ -131,28 +130,30 @@ server <- function(input, output, session) {
     
     file_extension <<- tools::file_ext(inFile$datapath)
     
-    if (input$qualtrics | input$qualtrics_legacy){
-      #Qualtrics specific issue
-      rawdata <<- as.data.frame(readSurvey(inFile$datapath,
-                                           legacy = input$qualtrics_legacy))
+    if (input$qualtrics){
+      headers <- read.csv(inFile$datapath, nrows = 1, header = F, as.is = T)
+      metastuff <- read.csv(inFile$datapath, nrows = 1, 
+                            header = F, as.is = T,
+                            skip = 1)
+      rawdata <<- as.data.frame(read.csv(inFile$datapath, skip = 3, header = F))
+      colnames(rawdata) <<- headers
+      names(rawdata) <<- headers
+      attr(rawdata, "label") <<- metastuff
+      
+    } else if (input$qualtrics_legacy){
+      headers <- read.csv(inFile$datapath, nrows = 1, header = F, as.is = T)
+      metastuff <- read.csv(inFile$datapath, nrows = 1, 
+                            header = F, as.is = T,
+                            skip = 1)
+      rawdata <<- as.data.frame(read.csv(inFile$datapath, skip = 2, header = F))
+      colnames(rawdata) <<- headers
+      names(rawdata) <<- headers
+      attr(rawdata, "label") <<- metastuff
+      
     } else { 
       #all others with rio 
       rawdata <<- as.data.frame(import(inFile$datapath))
     }
-    # if (file_extension == "csv") {
-    #   rawdata <<- read.csv(inFile$datapath, header = input$header,
-    #                        stringsAsFactors = F)
-    # } else if (file_extension %in% c("xls", "xlsx")) {
-    #   rawdata <<- as.data.frame(readxl::read_excel(inFile$datapath,
-    #                                                col_names = input$header))
-    # } else if (file_extension %in% c("sav")) {
-    #   rawdata <<- as.data.frame(haven::read_sav(inFile$datapath))
-    # } else if (file_extension %in% c("sas")) {
-    #   rawdata <<- as.data.frame(haven::read_sas(inFile$datapath))
-    # } else if (file_extension %in% c("txt")) {
-    #   rawdata <<- as.data.frame(read.delim(inFile$datapath,
-    #                                        header = input$header))
-    # }
     
     #save file name as global variable for writing
     file_name <<- gsub(paste0("." , file_extension), "", inFile$name)
@@ -162,9 +163,18 @@ server <- function(input, output, session) {
     attribute_storage <<- sapply(column_names, function(x) NULL)
     
     for (theCol in column_names) {
-      vals <- sort(unique(rawdata[,theCol]))
-      desc <- as.character(vals)
-      # TODO: get value + description labels from SPSS attributes if they exist
+
+      ## deal with labelSSS for variable labels
+      labels_exist <- names(attributes(rawdata[ , theCol])$labels)
+      
+      #if labels exist
+      if (!is.null(labels_exist)){
+        vals <- attributes(rawdata[ , theCol])$labels
+        desc <- as.character(labels_exist)
+      } else {
+        vals <- sort(unique(rawdata[,theCol]))
+        desc <- as.character(vals)
+      }
       
       attribute_storage[[theCol]] <<- data.frame(
         "values" = vals,
@@ -219,9 +229,26 @@ server <- function(input, output, session) {
       }
     })
     
-    min_vals <- apply(rawdata, 2, min, na.rm = T)
-    max_vals <- apply(rawdata, 2, max, na.rm = T)
+    min_vals <- apply(rawdata, 2, function(x){
+      if (length(na.omit(x)) > 0){
+        min(x, na.rm = T)
+      } else {"No Data Present"}
+    })
+    max_vals <- apply(rawdata, 2, function(x){
+      if (length(na.omit(x)) > 0){
+        max(x, na.rm = T)
+      } else {"No Data Present"}
+    })
     
+    #the attribute label (no S)
+    description_entered <- rep("Enter Here", times = ncol(rawdata))
+    for (i in 1:length(description_entered)){
+      temp_label <- attributes(rawdata[ , i])$label
+      if (!is.null(temp_label)){
+        description_entered[i] <- temp_label
+      }
+    }
+      
     var_data <<- data.frame(
       # not editable
       variable = column_names,
@@ -230,8 +257,7 @@ server <- function(input, output, session) {
       levels = unique_vals,
       
       # editable - required
-      # TODO: get from SPSS description column
-      description = "Enter Here",
+      description = description_entered,
       
       # editable - optional
       type = types,
@@ -263,12 +289,6 @@ server <- function(input, output, session) {
   })
   
   vars_proxy = dataTableProxy('vars_table', session)
-  
-  # ## copy_var_to_desc_button
-  # observeEvent(input$copy_var_to_desc_button, {
-  #   var_data[, 'description'] <<- var_data[, 'variable']
-  #   DT::replaceData(vars_proxy, var_data, resetPaging = F)
-  # })
   
   ## proxy saving variable data ----
   observeEvent(input$vars_table_cell_edit,  {

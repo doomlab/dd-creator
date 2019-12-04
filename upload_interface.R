@@ -12,13 +12,19 @@ upload_tab <- tabItem(tabName = "upload_tab",
         editing the descriptions on the next pages \"3. Variables\" and \"4. Category Labels\" 
         in the left hand menu. The data file you uploaded will be displayed below, so you can verify 
         it was read properly."),
+      p(),
+      p("First, select if the file is a Qualtrics specific format. Newer versions include two 
+        extra lines of metadata that can be imported. Older \"legacy\" versions include only 
+        one extra line of data."),
+      checkboxInput("qualtrics", "Data file is Qualtrics formatted .csv.", FALSE),
+      checkboxInput("qualtrics_legacy", "Data file is Legacy Qualtrics formatted .csv.", FALSE),
+      p(),
+      p("Now, upload the file that you wish to create metadata for."),
       fileInput("inFile", "Nearly all data formats supported:", 
                 multiple = FALSE, width = NULL,
                 buttonLabel = "Browse...", 
                 placeholder = "No file selected"
       ),
-      checkboxInput("qualtrics", "Data file is Qualtrics formatted .csv.", FALSE),
-      checkboxInput("qualtrics_legacy", "Data file is Legacy Qualtrics formatted .csv.", FALSE),
       DTOutput("rawdata_table")
     )
   )

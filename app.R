@@ -408,7 +408,7 @@ server <- function(input, output, session) {
       for (i in 1:nrow(creators_table)){
         authors[[i]] <<- list(
           `@type` = "Person",
-          id = creators_table$id[i],
+          identifier = creators_table$id[i],
           givenName = creators_table$givenName[i],
           familyName = creators_table$familyName[i],
           email = creators_table$email[i],
@@ -418,10 +418,13 @@ server <- function(input, output, session) {
       
       ## create variable information
       var_data_json <<- list()
+      
+      if (exists("var_data")){
+      
       for (i in 1:nrow(var_data)){ 
         var_data_json[[i]] <<- list(
           `@type` = "PropertyValue",
-          id = var_data$variable[i], # 
+          identifier = var_data$variable[i], # 
           unitText = var_data$type[i], #
           minValue = var_data$min[i], #
           maxValue = var_data$max[i], #
@@ -436,31 +439,39 @@ server <- function(input, output, session) {
                                              attribute_levels[[var_data$variable[i]]])), #
           description = var_data$description[i], #
           alternateName = var_data$synonyms[i])
-        }
+        } ## close variable writing
+      } ## close if it exists 
       
       #take metadata data and create JSON
-      list(`@type` = "Dataset",
-        name = input$project_title, #title 
-        fileFormat = file_extension,
-        fileName = file_name,
-        description = input$project_description,
-        contentUrl = input$project_hosting,
-        datePublished = input$datePublished,
-        citation = input$citation,
-        keywords = input$keywords,
-        license = input$license,
-        funder = input$funder,
-        temporalCoverage = paste(input$startDate, input$endDate, sep="/"),
+      list(
+        `@context` = "https://schema.org/",
+        `@type` = "Dataset",
+        name = if (exists("input$project_title")) { input$project_title } else {"NA"}, #title 
+        fileFormat = if (exists("file_extension")) { file_extension } else {"NA"},
+        fileName = if (exists("file_name")) { file_name } else {"NA"},
+        description = if (exists("input$project_description")) { input$project_description } else {"NA"},
+        contentUrl = if (exists("input$project_hosting")) { input$project_hosting } else {"NA"},
+        datePublished = if (exists("input$datePublished")) { input$datePublished } else {"NA"},
+        citation = if (exists("input$citation")) { input$citation } else {"NA"},
+        keywords = if (exists("input$keywords")) { input$keywords } else {"NA"},
+        license = if (exists("input$license")) { input$license } else {"NA"},
+        funder = if (exists("input$funder")) { input$funder } else {"NA"},
+        temporalCoverage = if (exists("input$startDate") & exists("input$endDate")) {
+          paste(input$startDate, input$endDate, sep="/")
+        } else if (exists("input$startDate")) { input$startDate 
+          } else if (exists("input$endDate")) { input$endDate 
+          } else { "NA" },
         spatialCoverage = list(
           `@type` = "Place",
-          name = input$geographicDescription),
+          name = if (exists("input$geographicDescription")){ input$geographicDescription 
+            } else {"NA"}),
         #do this map 
-        creator = authors,
+        author = authors,
         distribution = list(
           `@type` = "DataDownload",
-          name = input$project_title,
-          contentUrl = input$project_hosting,
-          fileFormat = file_extension),
+          name = if (exists("input$project_title")) { input$project_title } else {"NA"},
+          contentUrl = if (exists("input$project_hosting")){ input$project_hosting } else { "NA" },
+          fileFormat = if (exists(file_extension)) { file_extension } else { "NA" }),
         variableMeasured = var_data_json) %>% 
         toJSON() %>%
         writeLines(file)

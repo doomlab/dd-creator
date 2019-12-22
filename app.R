@@ -34,10 +34,10 @@ ui <- dashboardPage(skin = 'black',
   dashboardHeader(title = "Data Dictionary Creator"),
   dashboardSidebar(
     sidebarMenu(
-      menuItem(tags$b("1. Project Info"), tabName = "project_tab"),
-      menuItem(tags$b("2. Upload Data"), tabName = "upload_tab"),
-      menuItem(tags$b("3. Variables"), tabName = "variables_tab"),
-      menuItem(tags$b("4. Category Labels"), tabName = "labels_tab"),
+      menuItem(tags$b("1. Upload Data"), tabName = "upload_tab"),
+      menuItem(tags$b("2. Variables"), tabName = "variables_tab"),
+      menuItem(tags$b("3. Category Labels"), tabName = "labels_tab"),
+      menuItem(tags$b("4. Project Info"), tabName = "project_tab"),
       menuItem(tags$b("5. Output"), tabName = "output_tab"),
       menuItem(tags$b("6. About"), tabName = "help_tab")
     )
@@ -63,10 +63,10 @@ ui <- dashboardPage(skin = 'black',
     
     ## show the tab items
     tabItems(
-      project_tab,
       upload_tab,
       variables_tab,
       labels_tab,
+      project_tab,
       output_tab,
       help_tab
     ) # end tabItems
@@ -243,10 +243,10 @@ server <- function(input, output, session) {
     #the attribute label (no S)
     description_entered <- rep("Enter Here", times = ncol(rawdata))
     for (i in 1:length(description_entered)){
-      temp_label <- attributes(rawdata[ , i])$label
+      temp_label <- unlist(attributes(rawdata[ , i])["label"])
       if (!is.null(temp_label)){
         description_entered[i] <- temp_label
-      }
+      } 
     }
       
     var_data <<- data.frame(

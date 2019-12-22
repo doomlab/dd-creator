@@ -7,13 +7,13 @@ output_tab <- tabItem(tabName = "output_tab",
       status = "primary",
       width = 12,
       p("On this page, you can download several versions of the information you created on 
-        \"3. Variables\" and \"4. Category Labels\"."),
+        \"Variables\" and \"Category Labels\"."),
       p("The Variable Metadata is a CSV file that contains the metadata 
-        information you entered on step \"3. Variables\"."),
+        information you entered on step \"Variables\"."),
       downloadButton("output_csv", "Download Variable Metadata"),
       p(),
       p("The Category Labels file is a CSV file that contains the metadata information 
-        for category labels you entered in step \"4. Category Labels\"."),
+        for category labels you entered in step \"Category Labels\"."),
       downloadButton("output_attributes", "Download Category Labels"),      
       p(),
       p("The RData format (.Rdata) is a format designed for use with R, that combines the 

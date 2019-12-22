@@ -169,10 +169,10 @@ server <- function(input, output, session) {
       
       #if labels exist
       if (!is.null(labels_exist)){
-        vals <- attributes(rawdata[ , theCol])$labels
+        vals <- as.character(attributes(rawdata[ , theCol])$labels)
         desc <- as.character(labels_exist)
       } else {
-        vals <- sort(unique(rawdata[,theCol]))
+        vals <- as.character(sort(unique(rawdata[,theCol])))
         desc <- as.character(vals)
       }
       
@@ -210,7 +210,7 @@ server <- function(input, output, session) {
                       label = NULL, choices = column_names,
                       selected = NULL)
     
-    types <- sapply(rawdata, class)
+    types <- sapply(rawdata, function(x) class(x)[1])
     
     unique_val_n <- apply(rawdata, 2, function(x) { 
       length(unique(x)) 
